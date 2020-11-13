@@ -1,6 +1,9 @@
 const router = require("express").Router();
-const bcryptjs = require("bcryptjs");
 const config = require("../api/config");
+
+const jwt = require("jsonwebtoken"); // npm i this package
+const bcryptjs = require("bcryptjs");
+
 const { isValid } = require("./auth-service");
 const Users = require("../auth/auth-model");
 
@@ -35,8 +38,8 @@ router.post("/login", (req, res) => {
   const { username, password} = req.body;
   // implement login
   if (isValid(req.body)) {
-    Users.findBy ({username})
-      .then(([user]) => {
+    Users.findBy(username)
+      .then((user) => {
         // compare password & hash stored in db
         if( user && bcryptjs.compareSync(password, user.password)) {
           const token = getJwt(user);
@@ -46,13 +49,13 @@ router.post("/login", (req, res) => {
         }
       })
       .catch(err =>{
+        console.log(err)
         res.status(500).json({ message:err.message})
       })
   } else {
     res.status(400).json({ message:"Please provide your username and an alphanumeric password to login"})
   }
 });
-
 
 function getJwt(user) {
   const payload = {
@@ -61,7 +64,7 @@ function getJwt(user) {
   const jwtTime ={
     expiresIn: "8h",
   };
-  return jwtTime.sign(payload, config.jwtSecret, jwtTime);
+  return jwt.sign(payload, config.jwtSecret, jwtTime);
 }
 
 module.exports = router;
