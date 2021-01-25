@@ -17,4 +17,15 @@ router.get('/', (req, res) => {
     });
 });
 
+//checkuser function 
+function checkUser(username) {
+  return function (req,res,next) {
+    if (req.jwt.username = username) {
+      next();
+    } else {
+      res.status(403).json({ message:"No access"})
+    }
+  }
+}
+
 module.exports = router;
